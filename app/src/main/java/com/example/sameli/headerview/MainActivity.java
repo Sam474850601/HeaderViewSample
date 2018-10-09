@@ -12,12 +12,12 @@ import android.view.ViewGroup;
 public class MainActivity extends AppCompatActivity {
     RecyclerView recyclerView;
     LinearLayoutManager linearLayoutManager;
-    SuspensionHeaderLayout suspensionHeaderLayout;
+    SuspensionLinearLayout suspensionLinearLayout;
     @Override
     protected void onCreate(Bundle savedInstanceState) {
         super.onCreate(savedInstanceState);
         setContentView(R.layout.activity_main2);
-        suspensionHeaderLayout = findViewById(R.id.headerlayout);
+        suspensionLinearLayout = findViewById(R.id.headerlayout);
         recyclerView = findViewById(R.id.recyclerview);
         linearLayoutManager  = new LinearLayoutManager(this);
         linearLayoutManager.setOrientation(LinearLayoutManager.VERTICAL);

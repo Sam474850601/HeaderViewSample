@@ -14,14 +14,14 @@ import android.widget.Scroller;
  * Created by same.li on 2018/10/8.
  */
 
-public class SuspensionHeaderLayout extends ViewGroup {
+public class SuspensionLinearLayout extends ViewGroup {
     private Scroller mScroller;
     private VelocityTracker velocityTracker;
     int mTouchSlop;
     int mMinimumVelocity;
     int mMaximumVelocity;
 
-    public SuspensionHeaderLayout(Context context, AttributeSet attrs) {
+    public SuspensionLinearLayout(Context context, AttributeSet attrs) {
         super(context, attrs);
         mScroller = new Scroller(context);
         ViewConfiguration configuration = ViewConfiguration.get(context);
