@@ -130,7 +130,6 @@ public class SuspensionHeaderLayout extends ViewGroup {
                         if(isSwipeDown){
 
                             if(0 !=  getScrollY()){
-                                Log.e("SuspensionHeaderLayout", "down ");
                                 if(getScrollY()<  getChildAt(0).getMeasuredHeight()){
                                     mScroller.fling(0, getScrollY(), 0, (int) -yVelocity, 0, 0 , 0, getChildAt(0).getMeasuredHeight());
                                     invalidate();
@@ -140,9 +139,7 @@ public class SuspensionHeaderLayout extends ViewGroup {
                         }else {
                             int measuredHeight = getChildAt(0).getMeasuredHeight();
                             if( getChildAt(0).getMeasuredHeight() !=  getScrollY()){
-                                Log.e("SuspensionHeaderLayout", "yVelocity "+yVelocity);
-                                Log.e("SuspensionHeaderLayout", "up "+getScrollY());
-                                Log.e("SuspensionHeaderLayout", "measuredHeight "+measuredHeight);
+
                                 mScroller.fling(0,  getScrollY(), 0, (int) -yVelocity, 0, 0 , 0,measuredHeight  );
                                 invalidate();
                             }
@@ -157,24 +154,7 @@ public class SuspensionHeaderLayout extends ViewGroup {
         return super.dispatchTouchEvent(event);
     }
 
-    private OnTouchConflictListener touchConflictListener;
 
-    public void setTouchConflictListener(OnTouchConflictListener touchConflictListener) {
-        this.touchConflictListener = touchConflictListener;
-    }
-
-    public interface OnTouchConflictListener {
-        boolean onChildScrollTop();
-    }
-
-    @Override
-    public boolean onInterceptTouchEvent(MotionEvent ev) {
-        boolean intercept = Math.abs(getScrollY()) < getChildAt(0).getMeasuredHeight();
-        if (null != touchConflictListener) {
-            return intercept && touchConflictListener.onChildScrollTop();
-        }
-        return intercept;
-    }
 
     @Override
     public void computeScroll() {
