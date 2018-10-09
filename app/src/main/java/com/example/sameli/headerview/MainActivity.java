@@ -9,18 +9,29 @@ import android.view.LayoutInflater;
 import android.view.View;
 import android.view.ViewGroup;
 
-public class MainActivity extends AppCompatActivity {
+public class MainActivity extends AppCompatActivity  implements SuspensionHeaderLayout.OnTouchConflictListener{
     RecyclerView recyclerView;
+    LinearLayoutManager linearLayoutManager;
+    SuspensionHeaderLayout suspensionHeaderLayout;
     @Override
     protected void onCreate(Bundle savedInstanceState) {
         super.onCreate(savedInstanceState);
         setContentView(R.layout.activity_main2);
+        suspensionHeaderLayout = findViewById(R.id.headerlayout);
         recyclerView = findViewById(R.id.recyclerview);
-        LinearLayoutManager linearLayoutManager = new LinearLayoutManager(this);
+        linearLayoutManager  = new LinearLayoutManager(this);
         linearLayoutManager.setOrientation(LinearLayoutManager.VERTICAL);
         recyclerView.setLayoutManager(linearLayoutManager);
         recyclerView.setAdapter(new MyAdapter());
+        suspensionHeaderLayout.setTouchConflictListener(this);
+
     }
+
+    @Override
+    public boolean onChildScrollTop() {
+        return 0 == linearLayoutManager.findFirstCompletelyVisibleItemPosition();
+    }
+
 
     class ViewHolder extends RecyclerView.ViewHolder{
 
