@@ -140,7 +140,7 @@ public class SuspensionLinearLayout extends ViewGroup {
                 scrollTo(getScrollX(), value);
 
                 if(null != onSuspensionListener){
-                    float  currentPercent =  mScroller.getCurrY() / (float)(extraHeight>0?headerViewHeight - extraHeight:headerViewHeight);
+                    float  currentPercent = getScrollY()/ (float)(extraHeight>0?headerViewHeight - extraHeight:headerViewHeight);
                     if(currentPersent != currentPercent){
                         onSuspensionListener.onScroll(  currentPersent =currentPercent );
                     }
