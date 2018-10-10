@@ -81,7 +81,7 @@ public class SuspensionLinearLayout extends ViewGroup {
                 paddingLeft,
                 paddingTop + topChildView.getMeasuredHeight() + headerView.getMeasuredHeight(),
                 getMeasuredWidth() - getPaddingRight(),
-                paddingTop + topChildView.getMeasuredHeight() + headerView.getMeasuredHeight() + contentView.getMeasuredHeight()+(extraHeight>0?headerViewHeight - extraHeight:0));
+                paddingTop + topChildView.getMeasuredHeight() + headerView.getMeasuredHeight() + contentView.getMeasuredHeight()+(extraHeight>0? headerViewHeight-extraHeight*2:0));
     }
 
 
