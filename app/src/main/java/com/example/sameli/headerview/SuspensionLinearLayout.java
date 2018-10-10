@@ -12,6 +12,8 @@ import android.widget.Scroller;
 
 /**
  * Created by same.li on 2018/10/8.
+ * 悬浮标题栏滑动组件。类似谷歌的联动组件
+ * 这是个线性的布局，并且要求子View只能是3个组件。
  */
 
 public class SuspensionLinearLayout extends ViewGroup {
@@ -20,6 +22,17 @@ public class SuspensionLinearLayout extends ViewGroup {
     int mTouchSlop;
     int mMinimumVelocity;
     int mMaximumVelocity;
+
+    private int extraHeight;
+
+    /**
+     * 设置滑动距离， 滑动距离等于  第一个view高度减去 height的值
+     * @param height
+     */
+    public void setExternalHeight(int height) {
+        this.extraHeight = height;
+    }
+
 
     public SuspensionLinearLayout(Context context, AttributeSet attrs) {
         super(context, attrs);
@@ -33,19 +46,21 @@ public class SuspensionLinearLayout extends ViewGroup {
     @Override
     protected void onMeasure(int widthMeasureSpec, int heightMeasureSpec) {
         super.onMeasure(widthMeasureSpec, heightMeasureSpec);
-        View topChildView = getChildAt(0);
-
-        measureChild(topChildView, MeasureSpec.makeMeasureSpec(getMeasuredWidth() - getPaddingLeft() - getPaddingRight(), MeasureSpec.EXACTLY),
+        if(3!=getChildCount()){
+            throw new IllegalArgumentException("子view必须是3个。");
+        }
+        View topHeaderChildView = getChildAt(0);
+        headerViewHeight = topHeaderChildView.getMeasuredHeight();
+        measureChild(topHeaderChildView, MeasureSpec.makeMeasureSpec(getMeasuredWidth() - getPaddingLeft() - getPaddingRight(), MeasureSpec.EXACTLY),
                 MeasureSpec.makeMeasureSpec(0, MeasureSpec.UNSPECIFIED));
-        View headerView = getChildAt(1);
-        measureChild(headerView, MeasureSpec.makeMeasureSpec(getMeasuredWidth() - getPaddingLeft() - getPaddingRight(), MeasureSpec.EXACTLY),
+        View suspensionView = getChildAt(1);
+        measureChild(suspensionView, MeasureSpec.makeMeasureSpec(getMeasuredWidth() - getPaddingLeft() - getPaddingRight(), MeasureSpec.EXACTLY),
                 MeasureSpec.makeMeasureSpec(0, MeasureSpec.UNSPECIFIED));
         View contentView = getChildAt(2);
         measureChild(contentView,
                 MeasureSpec.makeMeasureSpec(getMeasuredWidth() - getPaddingLeft() - getPaddingRight(), MeasureSpec.EXACTLY),
                 MeasureSpec.makeMeasureSpec(getMeasuredHeight() - getPaddingTop() - getPaddingBottom()
-                        - headerView.getMeasuredHeight(), MeasureSpec.EXACTLY));
-
+                        - suspensionView.getMeasuredHeight()-(extraHeight>0?headerViewHeight - extraHeight:0), MeasureSpec.EXACTLY));
     }
 
 
@@ -66,7 +81,7 @@ public class SuspensionLinearLayout extends ViewGroup {
                 paddingLeft,
                 paddingTop + topChildView.getMeasuredHeight() + headerView.getMeasuredHeight(),
                 getMeasuredWidth() - getPaddingRight(),
-                paddingTop + topChildView.getMeasuredHeight() + headerView.getMeasuredHeight() + contentView.getMeasuredHeight());
+                paddingTop + topChildView.getMeasuredHeight() + headerView.getMeasuredHeight() + contentView.getMeasuredHeight()+(extraHeight>0?headerViewHeight - extraHeight:0));
     }
 
 
@@ -83,6 +98,7 @@ public class SuspensionLinearLayout extends ViewGroup {
     int mPointerId;
 
     float yVelocity;
+    int headerViewHeight;
 
     @Override
     public boolean dispatchTouchEvent(MotionEvent event) {
@@ -104,44 +120,72 @@ public class SuspensionLinearLayout extends ViewGroup {
             case MotionEvent.ACTION_MOVE: {
                 velocityTracker.addMovement(event);
                 float currentY = event.getY();
-                int measuredHeight = getChildAt(0).getMeasuredHeight();
                 int value = getScrollY() + (int) (moveY - currentY);
                 if (value < 0) {
                     value = 0;
                 }
-                if (value > measuredHeight) {
-                    value = measuredHeight;
+                if(extraHeight>0){
+                    if (value > headerViewHeight - extraHeight) {
+                        value = headerViewHeight - extraHeight;
+                    }
+                }else {
+                    if (value > headerViewHeight) {
+                        value = headerViewHeight;
+                    }
                 }
+
                 velocityTracker.computeCurrentVelocity(1000, mMaximumVelocity);
                 moveY = currentY;
                 yVelocity = velocityTracker.getYVelocity(mPointerId);
                 scrollTo(getScrollX(), value);
+
+                if(null != onSuspensionListener){
+                    float  currentPercent =  mScroller.getCurrY() / (float)(extraHeight>0?headerViewHeight - extraHeight:headerViewHeight);
+                    if(currentPersent != currentPercent){
+                        onSuspensionListener.onScroll(  currentPersent =currentPercent );
+                    }
+                }
                 return super.dispatchTouchEvent(event);
             }
             case MotionEvent.ACTION_POINTER_UP:
             case MotionEvent.ACTION_CANCEL:
             case MotionEvent.ACTION_UP: {
-                Log.e("SuspensionHeaderLayout", "dispatchTouchEvent ACTION_UP");
+
                 //  mScroller.startScroll(0, 0,  0, getChildAt(0).getMeasuredHeight());
-                if ((Math.abs(yVelocity) >= mMinimumVelocity)) {
+                boolean isSwipeDown =  event.getY() -downY >0;
+                if(Math.abs(yVelocity) >= mMaximumVelocity){
+                    scrollTo(0, isSwipeDown?0:(extraHeight>0?headerViewHeight - extraHeight:headerViewHeight));
+                }
+                else if (Math.abs(yVelocity) >= mMinimumVelocity) {
                     if(Math.abs(event.getY() -downY) > mTouchSlop ){
-                        boolean isSwipeDown =  event.getY() -downY >0;
-                        Log.e("SuspensionHeaderLayout", "isSwipeDown "+isSwipeDown);
+
                         if(isSwipeDown){
 
                             if(0 !=  getScrollY()){
-                                if(getScrollY()<  getChildAt(0).getMeasuredHeight()){
-                                    mScroller.fling(0, getScrollY(), 0, (int) -yVelocity, 0, 0 , 0, getChildAt(0).getMeasuredHeight());
-                                    invalidate();
+                                if(extraHeight>0){
+                                    if(getScrollY()<  headerViewHeight - extraHeight){
+                                        mScroller.fling(0, getScrollY(), 0, (int) -(yVelocity*2), 0, 0 , 0, headerViewHeight - extraHeight);
+                                        invalidate();
+                                    }
+                                }else {
+                                    if(getScrollY()<  headerViewHeight){
+                                        mScroller.fling(0, getScrollY(), 0, (int) -(yVelocity*2), 0, 0 , 0,headerViewHeight);
+                                        invalidate();
+                                    }
                                 }
                             }
-
                         }else {
-                            int measuredHeight = getChildAt(0).getMeasuredHeight();
-                            if( getChildAt(0).getMeasuredHeight() !=  getScrollY()){
 
-                                mScroller.fling(0,  getScrollY(), 0, (int) -yVelocity, 0, 0 , 0,measuredHeight  );
-                                invalidate();
+                            if(extraHeight>0){
+                                if(headerViewHeight - extraHeight !=  getScrollY()){
+                                    mScroller.fling(0,  getScrollY(), 0, (int) -(yVelocity*2), 0, 0 , 0,headerViewHeight - extraHeight  );
+                                    invalidate();
+                                }
+                            }else {
+                                if(getScrollY() !=   headerViewHeight){
+                                    mScroller.fling(0,  getScrollY(), 0, (int) -(yVelocity*2), 0, 0 , 0,headerViewHeight  );
+                                    invalidate();
+                                }
                             }
                         }
                     }
@@ -154,6 +198,38 @@ public class SuspensionLinearLayout extends ViewGroup {
         return super.dispatchTouchEvent(event);
     }
 
+    private float currentPersent;
+
+    private  OnSuspensionListener onSuspensionListener;
+
+    public void setOnSuspensionListener(OnSuspensionListener onSuspensionListener) {
+        this.onSuspensionListener = onSuspensionListener;
+    }
+
+    //滚动回调
+    public interface OnSuspensionListener{
+        void  onScroll(float persent);
+    }
+
+    /**
+     * 显示全部视图
+     */
+    public void  show(){
+        if(!mScroller.isFinished()){
+            mScroller.abortAnimation();
+        }
+        scrollTo(0, 0);
+    }
+
+    /**
+     * 隐藏顶部文件
+     */
+    public void  hide(){
+        if(!mScroller.isFinished()){
+            mScroller.abortAnimation();
+        }
+        scrollTo(0, extraHeight>0?headerViewHeight - extraHeight:headerViewHeight);
+    }
 
 
     @Override
@@ -161,6 +237,12 @@ public class SuspensionLinearLayout extends ViewGroup {
         if (mScroller.computeScrollOffset()) {
             scrollTo(mScroller.getCurrX(), mScroller.getCurrY());
             invalidate();
+            if(null != onSuspensionListener){
+                float currentPercent =  mScroller.getCurrY() / (float)(extraHeight>0?headerViewHeight - extraHeight:headerViewHeight);
+                if(currentPersent != currentPercent){
+                    onSuspensionListener.onScroll(  currentPersent =currentPercent );
+                }
+            }
         }
     }
 }

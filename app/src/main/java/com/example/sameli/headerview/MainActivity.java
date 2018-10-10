@@ -5,6 +5,7 @@ import android.support.v7.app.AppCompatActivity;
 import android.os.Bundle;
 import android.support.v7.widget.LinearLayoutManager;
 import android.support.v7.widget.RecyclerView;
+import android.util.Log;
 import android.view.LayoutInflater;
 import android.view.View;
 import android.view.ViewGroup;
@@ -23,6 +24,13 @@ public class MainActivity extends AppCompatActivity {
         linearLayoutManager.setOrientation(LinearLayoutManager.VERTICAL);
         recyclerView.setLayoutManager(linearLayoutManager);
         recyclerView.setAdapter(new MyAdapter());
+        suspensionLinearLayout.setOnSuspensionListener(new SuspensionLinearLayout.OnSuspensionListener() {
+            @Override
+            public void onScroll(float persent) {
+                Log.e("SuspensionHeaderLayout", "persent:"+persent);
+            }
+        });
+       // suspensionLinearLayout.setExternalHeight(50);
 
     }
 
@@ -54,6 +62,11 @@ public class MainActivity extends AppCompatActivity {
         public int getItemCount() {
             return 100;
         }
+    }
+
+
+    public void onTest(View view ){
+        suspensionLinearLayout.hide();
     }
 
 }
