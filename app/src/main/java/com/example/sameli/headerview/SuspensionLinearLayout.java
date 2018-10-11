@@ -82,6 +82,10 @@ public class SuspensionLinearLayout extends ViewGroup {
                 paddingTop + topChildView.getMeasuredHeight() + headerView.getMeasuredHeight(),
                 getMeasuredWidth() - getPaddingRight(),
                 paddingTop + topChildView.getMeasuredHeight() + headerView.getMeasuredHeight() + contentView.getMeasuredHeight()+(extraHeight>0? headerViewHeight-extraHeight*2:0));
+        float  currentPercent = getScrollY()/ (float)(extraHeight>0?Math.abs(headerViewHeight - extraHeight):headerViewHeight);
+        if(currentPersent != currentPercent){
+            onSuspensionListener.onScroll(  currentPersent =currentPercent );
+        }
     }
 
 
@@ -93,7 +97,6 @@ public class SuspensionLinearLayout extends ViewGroup {
     private float moveY;
     private float downY;
 
-    private float scrollMove = 0;
 
     int mPointerId;
 
@@ -140,7 +143,7 @@ public class SuspensionLinearLayout extends ViewGroup {
                 scrollTo(getScrollX(), value);
 
                 if(null != onSuspensionListener){
-                    float  currentPercent = getScrollY()/ (float)(extraHeight>0?headerViewHeight - extraHeight:headerViewHeight);
+                    float  currentPercent = getScrollY()/ (float)(extraHeight>0?Math.abs(headerViewHeight - extraHeight):headerViewHeight);
                     if(currentPersent != currentPercent){
                         onSuspensionListener.onScroll(  currentPersent =currentPercent );
                     }
@@ -198,7 +201,8 @@ public class SuspensionLinearLayout extends ViewGroup {
         return super.dispatchTouchEvent(event);
     }
 
-    private float currentPersent;
+    //当前滚动的百分比。-1代表还没滚动过。
+    private volatile  float currentPersent=-1;
 
     private  OnSuspensionListener onSuspensionListener;
 
@@ -219,6 +223,9 @@ public class SuspensionLinearLayout extends ViewGroup {
             mScroller.abortAnimation();
         }
         scrollTo(0, 0);
+        if(currentPersent != 0f){
+            onSuspensionListener.onScroll(  currentPersent = 0f);
+        }
     }
 
     /**
@@ -229,6 +236,9 @@ public class SuspensionLinearLayout extends ViewGroup {
             mScroller.abortAnimation();
         }
         scrollTo(0, extraHeight>0?headerViewHeight - extraHeight:headerViewHeight);
+        if(currentPersent != 1f){
+            onSuspensionListener.onScroll(  currentPersent = 1f);
+        }
     }
 
 
@@ -238,7 +248,7 @@ public class SuspensionLinearLayout extends ViewGroup {
             scrollTo(mScroller.getCurrX(), mScroller.getCurrY());
             invalidate();
             if(null != onSuspensionListener){
-                float currentPercent =  mScroller.getCurrY() / (float)(extraHeight>0?headerViewHeight - extraHeight:headerViewHeight);
+                float  currentPercent = mScroller.getCurrY()/ (float)(extraHeight>0?Math.abs(headerViewHeight - extraHeight):headerViewHeight);
                 if(currentPersent != currentPercent){
                     onSuspensionListener.onScroll(  currentPersent =currentPercent );
                 }

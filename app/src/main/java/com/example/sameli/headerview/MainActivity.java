@@ -30,7 +30,7 @@ public class MainActivity extends AppCompatActivity {
                 Log.e("SuspensionHeaderLayout", "persent:"+persent);
             }
         });
-       // suspensionLinearLayout.setExternalHeight(100);
+        suspensionLinearLayout.setExternalHeight(50);
 
     }
 

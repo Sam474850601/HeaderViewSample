@@ -14,13 +14,12 @@
         android:background="#00a000"
         />
 
-    <TextView
+    <Button
         android:layout_width="match_parent"
         android:layout_height="wrap_content"
-        android:text="Hello World2!"
-        android:background="#ffa011"
+        android:text="测试"
+        android:onClick="onTest"
         />
-
     <android.support.v7.widget.RecyclerView
         android:layout_width="match_parent"
         android:layout_height="wrap_content"
